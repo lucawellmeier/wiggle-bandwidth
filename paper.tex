@@ -4,9 +4,11 @@
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
 \usepackage[nopatch=eqnum]{microtype}
+\usepackage{cleveref}
 
+\newcommand{\R}{\mathbb{R}}
 
-\title{Wiggling the bandwidth in kernel ridgeless regression 
+\title{Wiggling the bandwidth in ridgeless regression 
     with scale-dependent kernels}
 \author{Luca Wellmeier}
 \begin{document}
@@ -25,6 +27,40 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Let $\mathbf X \in \R^{n \times d}$ be a matrix of $n$ training examples
+$X_1, \dots, X_n \in \R^d$ in $d$-dimensional Euclidean space as rows and 
+let $Y$ be the column vector of responses $y_1, \dots, y_n \in \R$.
+The main actor of this paper is the kernel ridgeless regression estimator
+that predicts the response on an unseen data point $X \in \R^d$ as
+\begin{equation} \label{eq:ridgeless}
+    \hat f(X) = \sum_{i=1}^n (\mathbf K^\dagger Y)_i K(X, X_i).
+\end{equation}
+Here, $mathbf K$ denotes the kernel matrix $\mathbf K_{ij} = k(X_i, X_j)$
+is the \emph{kernel matrix} obtained by evaluating a kernel function 
+$k \colon \R^d \times \R^d \to \R$ on the training examples and 
+$\mathbf K^\dagger$ denotes its \emph{pseudo-inverse}.
+We briefly recall the motivations behind these notions.
+First, the \emph{representer theorem} asserts that any minimizer to the 
+least squares problem
+\[ \min_{f \in \mathcal H_k} \frac 1n \sum_{i=1}^n (y_i - f(X_i))^2 \]
+in the \emph{reproducing kernel Hilbert space} $\mathcal H_k$ associated
+to $k$, is given by a linear combination of the form
+$\sum_{i=1}^n c_i k(X,X_i)$.
+This allows to apply the usual linear least squares method to a - at the 
+first glance - non-linear approximation problem in a possibly 
+infinite-dimensional hypothesis space by pushing the data points into 
+the \emph{feature space} spanned by $K(X, \cdot) \in \mathcal H_k$ 
+for $X \in \R^d$.
+The kernel matrix in this setting corresponds to the empirical covariance
+matrix $\mathbf X^T \mathbf X$ and classical theory suggests that, even if 
+it does not possess full-rank, there will always exist a minimizer to 
+the least squares problem above.
+The pseudo-inverse then corresponds to the unique least-squares solution
+with minimal $\mathcal H_k$-norm.
+This reduction of an infinite-dimensional optimization problem to a
+finite-dimensional one using kernels is generally known as the 
+\emph{kernel trick}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Wiggling as a regularization technique}

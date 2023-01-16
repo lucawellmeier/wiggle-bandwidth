@@ -9,7 +9,7 @@
 \newcommand{\R}{\mathbb{R}}
 
 \title{Wiggling the bandwidth in ridgeless regression 
-    with scale-dependent kernels}
+        with scale-dependent kernels}
 \author{Luca Wellmeier}
 \begin{document}
 \begin{abstract}
@@ -26,8 +26,6 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 Let $\mathbf X \in \R^{n \times d}$ be a matrix of $n$ training examples
 $X_1, \dots, X_n \in \R^d$ in $d$-dimensional Euclidean space as rows and 
 let $Y$ be the column vector of responses $y_1, \dots, y_n \in \R$.
@@ -36,7 +34,7 @@ that predicts the response on an unseen data point $X \in \R^d$ as
 \begin{equation} \label{eq:ridgeless}
     \hat f(X) = \sum_{i=1}^n (\mathbf K^\dagger Y)_i K(X, X_i).
 \end{equation}
-Here, $mathbf K$ denotes the kernel matrix $\mathbf K_{ij} = k(X_i, X_j)$
+Here, $\mathbf K$ denotes the kernel matrix $\mathbf K_{ij} = k(X_i, X_j)$
 is the \emph{kernel matrix} obtained by evaluating a kernel function 
 $k \colon \R^d \times \R^d \to \R$ on the training examples and 
 $\mathbf K^\dagger$ denotes its \emph{pseudo-inverse}.
@@ -62,16 +60,55 @@ This reduction of an infinite-dimensional optimization problem to a
 finite-dimensional one using kernels is generally known as the 
 \emph{kernel trick}.
 
+Recently, there was a new wave of interest into kernels sparked by the 
+fundamental question of why highly over-parameterized deep neural nets
+perform as well as they do given that the usual established model, 
+the \emph{bias-variance trade-off}, does not capture this regime.
+The idea is that to find a good estimator one should choose the 
+complexity of the hypothesis space should be high enough to avoid 
+\emph{underfitting} but simultaneously low enough to avoid 
+\emph{overfitting}.
+For instance, if we roughly identify the number of adjustable parameters
+of a model with the complexity of the hypothesis space, we would expect
+a U-shaped test error curve over the number of parameters with very high
+risk at the extrema where $N_{\textrm{param}}$ is very small but also
+$N_{\textrm{param}} \approx N_{\textrm{train}}$, where the model is able
+to \emph{interpolate} the training data - it learns them by heart and 
+the analogy is the same as in the human experience where learning by heart
+does not give you true understanding.
+However, modern, practically successful, deep neural nets tend to have a
+parameter count that exceeds the training sample count by orders of 
+magnitude.
+This is not captured by classical theory so the question is two-fold:
+is this the reason for their performance and 
+what exactly happens in this \emph{interpolating regime}.
+A good start into the literature would be the following papers on 
+the \emph{double descent} curve (\cite{doubledescent}) and on the new 
+concept of \emph{benign overfitting} (\cite{benignoverfitting}).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Wiggling as a regularization technique}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Iterative wiggling to find the best bandwidth}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions and directions}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{thebibliography}{20}
+
+\bibitem{doubledescent}
+Belkin, Mikhail, et al. "Reconciling modern machine learning practice and the bias-variance trade-off." arXiv preprint arXiv:1812.11118 (2018).
+
+\bibitem{benignoverfitting}
+Bartlett, Peter L., et al. "Benign overfitting in linear regression." Proceedings of the National Academy of Sciences 117.48 (2020): 30063-30070.
+
+\bibitem{understandkernels}
+Belkin, Mikhail, Siyuan Ma, and Soumik Mandal. "To understand deep learning we need to understand kernel learning." International Conference on Machine Learning. PMLR, 2018.
+
+\bibitem{justinterpolate}
+Liang, Tengyuan, and Alexander Rakhlin. "Just interpolate: Kernel “ridgeless” regression can generalize." The Annals of Statistics 48.3 (2020): 1329-1347.
+
+\end{thebibliography}
 \end{document}

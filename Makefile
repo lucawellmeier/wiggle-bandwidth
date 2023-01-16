@@ -10,6 +10,8 @@ build/pdf/wiggle.pdf: paper.tex | $(BUILD_DIR)
 	$(LATEX_CMD) -jobname=$(shell basename $@ .pdf) $^
 	mv $(BUILD_DIR)/latextmp/$(shell basename $@) $(shell dirname $@)
 
-.PHONY: clean
+.PHONY: clean freeze
 clean:
 	rm -rf $(BUILD_DIR)
+freeze:
+	.venv/bin/pip freeze > requirements.txt

@@ -64,8 +64,8 @@ Recently, there was a new wave of interest into kernels sparked by the
 fundamental question of why highly over-parameterized deep neural nets
 perform as well as they do given that the usual established model, 
 the \emph{bias-variance trade-off}, does not capture this regime.
-The idea is that to find a good estimator one should choose the 
-complexity of the hypothesis space should be high enough to avoid 
+The idea is that in order to find a good estimator one should choose 
+the complexity of the hypothesis space to be high enough to avoid 
 \emph{underfitting} but simultaneously low enough to avoid 
 \emph{overfitting}.
 For instance, if we roughly identify the number of adjustable parameters
@@ -83,8 +83,41 @@ This is not captured by classical theory so the question is two-fold:
 is this the reason for their performance and 
 what exactly happens in this \emph{interpolating regime}.
 A good start into the literature would be the following papers on 
-the \emph{double descent} curve (\cite{doubledescent}) and on the new 
+the \emph{double descent} phenomenon (\cite{doubledescent}) and on the
 concept of \emph{benign overfitting} (\cite{benignoverfitting}).
+
+In particular, there are many indications that kernel learning methods 
+behave analgously to deep learning from many different perspectives.
+Much evidence was provided in \cite{understandkernels}.
+First, many kernels as for instance Laplacian and Gaussian are always 
+able to interpolate the training data perfectly, providing a prime example
+of interpolating estimators.
+Unlike deep neural nets, kernel methods are easy to handle not only on 
+paper but also practically due to the very small amount of hyper-parameters
+and there are many tasks in which their performance is comparable to the 
+latter or even exceed it.
+In \cite{justinterpolate}, the authors provide experimental and theoretic 
+evidendence that it is better to interpolate instead of the classically 
+suggested norm penalties (\textit{à la} Tikhonov) under certain circumstances.
+Now, these circumstances have not been fully understood but some necessary 
+conditions seem to have pinned down:
+high-dimensionality (\cite{laplaceconsistency,benignoverfitting}) 
+with low effective dimension (\cite{benignoverfitting})
+and properly chosen smoothness of the kernel w.r.t. the nature of the data 
+(\cite{justinterpolate}).
+Moreover, there seems to be strong links (\cite{ntklaplacian}) between 
+Laplacian kernels and ReLU feed-forward neural nets through another kernel 
+called the \emph{neural tangent kernel} that is able to capture the 
+learning dynamics of gradient descent there.
+
+These reasons have motivated our choice to consider here the extrema of 
+the spectrum of \emph{Matérn kernels}: a family of kernels whose associated
+RKHSs are exactly Sobolev spaces with real smoothness index.
+The least smooth member of the family, the \emph{Laplacian kernel}, is 
+defined by
+\[ k^L_\gamma(x,x') = \exp(-\gamma \| x - x' \|) \]
+and the smoothest member of it is the \emph{Gaussian kernel}
+\[ k^G_\gamma(x,x') = \exp(-\gamma \| x - x' \|^2). \]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Wiggling as a regularization technique}
@@ -109,6 +142,12 @@ Belkin, Mikhail, Siyuan Ma, and Soumik Mandal. "To understand deep learning we n
 
 \bibitem{justinterpolate}
 Liang, Tengyuan, and Alexander Rakhlin. "Just interpolate: Kernel “ridgeless” regression can generalize." The Annals of Statistics 48.3 (2020): 1329-1347.
+
+\bibitem{ntklaplacian}
+Geifman, Amnon, et al. "On the similarity between the laplace and neural tangent kernels." Advances in Neural Information Processing Systems 33 (2020): 1451-1461.
+
+\bibitem{laplaceconsistency}
+Rakhlin, Alexander, and Xiyu Zhai. "Consistency of interpolation with Laplace kernels is a high-dimensional phenomenon." Conference on Learning Theory. PMLR, 2019.
 
 \end{thebibliography}
 \end{document}

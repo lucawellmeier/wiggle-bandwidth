@@ -6,15 +6,16 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/results
 	mkdir -p $(BUILD_DIR)/figures
 
-EXPERIMENTS = $(shell find experiments -name "exp_*.py")
-RESULTS = $(patsubst experiments/exp_%.py,$(BUILD_DIR)/results/%.npz,$(EXPERIMENTS))
-FIGURES = $(patsubst experiments/exp_%.py,$(BUILD_DIR)/figures/%.png,$(EXPERIMENTS))
+COMPUTE_SCRIPTS = $(shell find experiments -name "*_compute.py")
+RESULTS = $(patsubst experiments/%_compute.py,$(BUILD_DIR)/results/%.npz,$(COMPUTE_SCRIPTS))
 .PRECIOUS: $(RESULTS)
+$(BUILD_DIR)/results/%.npz: experiments/%_compute.py | $(BUILD_DIR)
+	python $<
 
-$(BUILD_DIR)/results/%.npz: experiments/exp_%.py | $(BUILD_DIR)
-	python -c "from experiments.exp_$* import compute; compute()"
-$(BUILD_DIR)/figures/%.png: $(BUILD_DIR)/results/%.npz
-	python -c "from experiments.exp_$* import figure; figure(show=False)"
+PRESENT_SCRIPTS = $(shell find experiments -name "*_present.py")
+FIGURES = $(patsubst experiments/%_present.py,$(BUILD_DIR)/figures/%.png,$(PRESENT_SCRIPTS))
+$(BUILD_DIR)/figures/%.png: experiments/%_present.py $(BUILD_DIR)/results/%.npz
+	python $<
 
 LATEX_CMD=pdflatex -output-directory=$(BUILD_DIR)/latextmp
 build/pdf/wiggle.pdf: paper.tex $(FIGURES) | $(BUILD_DIR)
@@ -25,5 +26,6 @@ build/pdf/wiggle.pdf: paper.tex $(FIGURES) | $(BUILD_DIR)
 .PHONY: clean freeze
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -rf experiments/__pycache__
 freeze:
 	.venv/bin/pip freeze > requirements.txt

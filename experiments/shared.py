@@ -58,15 +58,10 @@ class MnistBinaryDataset:
 
 
 
-def laplace_kernel(gamma,X0,X1=None):
-    if X1 is None: X1 = X0
-    D = distance_matrix(X0, X1, p=2)
+def laplace_kernel(gamma,X0=None,X1=None,D=None):
+    if D is None and X1 is None: X1 = X0
+    if D is None: D = distance_matrix(X0, X1, p=2)
     return np.exp(-gamma * D)
-
-def gaussian_kernel(gamma,X0,X1=None):
-    if X1 is None: X1 = X0
-    D = distance_matrix(X0, X1, p=2)
-    return np.exp(-gamma * D**2)
 
 
 
@@ -77,6 +72,8 @@ class WiggledScaleKernelLS:
         self.base_gamma = base_gamma
         self.wiggled_gamma = wiggled_gamma if wiggled_gamma is not None else base_gamma
         self.model = KernelRidge(alpha=0, gamma=base_gamma, kernel='precomputed')
+        self.Xtr = None
+        self.distmatrix = None
 
     def fit(self, Xtr, Ytr):
         startTime = time.time()
@@ -85,9 +82,16 @@ class WiggledScaleKernelLS:
         self.fit_time = time.time() - startTime
         self.Xtr = Xtr
         return self
+    
+    def precompute_eval_distmatrix(self, Xte):
+        assert(self.Xtr is not None)
+        self.distmatrix = distance_matrix(Xte, self.Xtr, p=2)
 
-    def predict(self, Xte):
-        Kte = self.kernel_func(self.wiggled_gamma, Xte, self.Xtr)
+    def predict(self, Xte=None):
+        if Xte is None:
+            Kte = self.kernel_func(self.wiggled_gamma, D=self.distmatrix)
+        else:
+            Kte = self.kernel_func(self.wiggled_gamma, X0=Xte, X1=self.Xtr)
         return self.model.predict(Kte)
 
 
@@ -112,12 +116,13 @@ class WiggleSearchScaleKernelLS:
 
         self.model.fit(Xtr0, Ytr0)
         self.fit_time = self.model.fit_time
+        self.model.precompute_eval_distmatrix(Xtr1)
 
         mses = []
         startTime = time.time()
         for gamma in self.search_gammas:
             self.model.wiggled_gamma = gamma
-            Ypr1 = self.model.predict(Xtr1)
+            Ypr1 = self.model.predict()
             mses.append(mean_squared_error(Ytr1, Ypr1))
         i = np.argmin(np.array(mses))
         self.wiggle_time = time.time() - startTime

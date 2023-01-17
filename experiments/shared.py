@@ -79,8 +79,10 @@ class WiggledScaleKernelLS:
         self.model = KernelRidge(alpha=0, gamma=base_gamma, kernel='precomputed')
 
     def fit(self, Xtr, Ytr):
+        startTime = time.time()
         Ktr = self.kernel_func(self.base_gamma, Xtr)
         self.model.fit(Ktr, Ytr)
+        self.fit_time = time.time() - startTime
         self.Xtr = Xtr
         return self
 
@@ -107,14 +109,18 @@ class WiggleSearchScaleKernelLS:
         Ytr0 = Ytr[:Ntr0]
         Xtr1 = Xtr[Ntr0:]
         Ytr1 = Ytr[Ntr0:]
+
         self.model.fit(Xtr0, Ytr0)
+        self.fit_time = self.model.fit_time
 
         mses = []
+        startTime = time.time()
         for gamma in self.search_gammas:
             self.model.wiggled_gamma = gamma
             Ypr1 = self.model.predict(Xtr1)
             mses.append(mean_squared_error(Ytr1, Ypr1))
         i = np.argmin(np.array(mses))
+        self.wiggle_time = time.time() - startTime
         self.best_gamma = self.search_gammas[i]
         self.model.wiggled_gamma = self.best_gamma
         self.best_mse = mses[i]
@@ -153,7 +159,7 @@ class IteratedWiggleSearchScaleKernelLS:
             cur_gamma = self.model_hist[-1].best_gamma
             self.gamma_hist.append(cur_gamma)
             self.fit_times.append(time.time() - startTime)
-            print('iteration {}/{} done in {} seconds'.format(it + 1, self.n_iter, self.fit_times[-1]))
+            print('iteration {0}/{1} done in {2:.2f} seconds'.format(it + 1, self.n_iter, self.fit_times[-1]))
 
     def predict(self, Xte):
         self.model_hist[-1].predict(Xte)

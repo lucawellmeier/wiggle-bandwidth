@@ -26,4 +26,6 @@ if __name__ == '__main__':
         wiggle_mses.append(model.model_hist[it].best_mse)
     
     resFile,_ = get_result_and_figure_path()
-    np.savez(resFile, refit=refit_mses, wiggle=wiggle_mses, gamma_hist=model.gamma_hist)
+    np.savez(resFile, 
+        refit=refit_mses, wiggle=wiggle_mses, 
+        gamma_hist=model.gamma_hist, fit_times=model.fit_times)

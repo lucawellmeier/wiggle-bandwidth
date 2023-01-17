@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from matplotlib import pyplot as plt
-from code.shared import MnistBinaryDataset, laplace_kernel, IteratedWiggleSearchScaleKernelLS
+from experiments.shared import MnistBinaryDataset, laplace_kernel, IteratedWiggleSearchScaleKernelLS
 
 RES_FILE = 'build/results/iterative_algo.npz'
 FIG_FILE = 'build/figures/iterative_algo.png'

@@ -6,15 +6,15 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/results
 	mkdir -p $(BUILD_DIR)/figures
 
-EXPERIMENTS = $(shell find code -name "exp_*.py")
-RESULTS = $(patsubst code/exp_%.py,$(BUILD_DIR)/results/%.npz,$(EXPERIMENTS))
-FIGURES = $(patsubst code/exp_%.py,$(BUILD_DIR)/figures/%.png,$(EXPERIMENTS))
+EXPERIMENTS = $(shell find experiments -name "exp_*.py")
+RESULTS = $(patsubst experiments/exp_%.py,$(BUILD_DIR)/results/%.npz,$(EXPERIMENTS))
+FIGURES = $(patsubst experiments/exp_%.py,$(BUILD_DIR)/figures/%.png,$(EXPERIMENTS))
 .PRECIOUS: $(RESULTS)
 
-$(BUILD_DIR)/results/%.npz: code/exp_%.py | $(BUILD_DIR)
-	python -c "from code.exp_$* import compute; compute()"
+$(BUILD_DIR)/results/%.npz: experiments/exp_%.py | $(BUILD_DIR)
+	python -c "from experiments.exp_$* import compute; compute()"
 $(BUILD_DIR)/figures/%.png: $(BUILD_DIR)/results/%.npz
-	python -c "from code.exp_$* import figure; figure(show=False)"
+	python -c "from experiments.exp_$* import figure; figure(show=False)"
 
 LATEX_CMD=pdflatex -output-directory=$(BUILD_DIR)/latextmp
 build/pdf/wiggle.pdf: paper.tex $(FIGURES) | $(BUILD_DIR)

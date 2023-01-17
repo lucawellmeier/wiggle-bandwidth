@@ -4,7 +4,10 @@
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
 \usepackage[nopatch=eqnum]{microtype}
+\usepackage{graphicx}
 \usepackage{cleveref}
+
+\graphicspath{{build/figures/}}
 
 \newcommand{\R}{\mathbb{R}}
 
@@ -25,7 +28,12 @@
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% kernel ridgeless regression
 Let $\mathbf X \in \R^{n \times d}$ be a matrix of $n$ training examples
 $X_1, \dots, X_n \in \R^d$ in $d$-dimensional Euclidean space as rows and 
 let $Y$ be the column vector of responses $y_1, \dots, y_n \in \R$.
@@ -60,6 +68,7 @@ This reduction of an infinite-dimensional optimization problem to a
 finite-dimensional one using kernels is generally known as the 
 \emph{kernel trick}.
 
+% new regimes of statistical learning
 Recently, there was a new wave of interest into kernels sparked by the 
 fundamental question of why highly over-parameterized deep neural nets
 perform as well as they do given that the usual established model, 
@@ -86,6 +95,7 @@ A good start into the literature would be the following papers on
 the \emph{double descent} phenomenon (\cite{doubledescent}) and on the
 concept of \emph{benign overfitting} (\cite{benignoverfitting}).
 
+% focus on kernel methods
 In particular, there are many indications that kernel learning methods 
 behave analgously to deep learning from many different perspectives.
 Much evidence was provided in \cite{understandkernels}.
@@ -110,26 +120,72 @@ Laplacian kernels and ReLU feed-forward neural nets through another kernel
 called the \emph{neural tangent kernel} that is able to capture the 
 learning dynamics of gradient descent there.
 
-These reasons have motivated our choice to consider here the extrema of 
-the spectrum of \emph{Matérn kernels}: a family of kernels whose associated
-RKHSs are exactly Sobolev spaces with real smoothness index.
-The least smooth member of the family, the \emph{Laplacian kernel}, is 
-defined by
-\[ k^L_\gamma(x,x') = \exp(-\gamma \| x - x' \|) \]
-and the smoothest member of it is the \emph{Gaussian kernel}
-\[ k^G_\gamma(x,x') = \exp(-\gamma \| x - x' \|^2). \]
+% choice of kernel and what we will do
+These considerations have also sparked new interest in the other direction:
+due to all the analogies between kernels and neural nets researchers have
+started to scale up kernel methods to deal with big data.
+Interesting targets have been kernels coming from the Sobolev-Hilbert spaces
+$H^s(\R^d)$ with real smoothness index: the \emph{Matérn kernels}.
+This family's smoothest member is the Gaussian kernel, but we will (due to 
+the motivations above) consider only its least smooth member: the Laplacian
+kernel
+\[ k_\gamma(x,x') = \exp(-\gamma \| x - x' \|). \]
+The only hyper-parameter to adjust is the bandwidth $\gamma$ and in this 
+paper we investigate a new principle on how to both optimize it in 
+large-scale contexts and use it for regularization purposes.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Wiggling as a regularization technique}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Wiggling}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% what i mean by wiggling
+
+% not interpolating anymore
+
+% computational complexity and algorithmics
+
+% questions
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Iterative wiggling to find the best bandwidth}
+\subsection{Experiment: Does it compare to Tikhonov?}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusions and directions}
+\subsection{Experiment: Where to split the training set?}
 
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{split}
+    \caption{split}
+    \label{fig:split}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Experiment: Iterative wiggling as cheap bandwidth optimization}
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{iterative_algo}
+    \caption{split}
+    \label{fig:iterative_algo}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions and future directions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{thebibliography}{20}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \bibitem{doubledescent}
 Belkin, Mikhail, et al. "Reconciling modern machine learning practice and the bias-variance trade-off." arXiv preprint arXiv:1812.11118 (2018).

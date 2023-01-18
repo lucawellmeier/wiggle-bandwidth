@@ -67,11 +67,11 @@ def laplace_kernel(gamma,X0=None,X1=None,D=None):
 
 class WiggledScaleKernelLS:
 
-    def __init__(self, kernel_func, base_gamma, wiggled_gamma=None):
+    def __init__(self, kernel_func, base_gamma, wiggled_gamma=None, alpha=0):
         self.kernel_func = kernel_func
         self.base_gamma = base_gamma
         self.wiggled_gamma = wiggled_gamma if wiggled_gamma is not None else base_gamma
-        self.model = KernelRidge(alpha=0, gamma=base_gamma, kernel='precomputed')
+        self.model = KernelRidge(alpha=alpha, gamma=base_gamma, kernel='precomputed')
         self.Xtr = None
         self.distmatrix = None
 
@@ -98,12 +98,12 @@ class WiggledScaleKernelLS:
 
 class WiggleSearchScaleKernelLS:
 
-    def __init__(self, kernel_func, gamma0, search_gammas, split):
+    def __init__(self, kernel_func, gamma0, search_gammas, split, alpha=0):
         self.kernel_func = kernel_func
         self.gamma0 = gamma0
         self.search_gammas = search_gammas
         self.split = split
-        self.model = WiggledScaleKernelLS(kernel_func=kernel_func, base_gamma=gamma0)
+        self.model = WiggledScaleKernelLS(kernel_func=kernel_func, base_gamma=gamma0, alpha=alpha)
         self.best_gamma = None
 
     def fit(self, Xtr, Ytr):

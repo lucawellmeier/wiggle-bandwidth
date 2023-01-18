@@ -5,7 +5,7 @@ from shared import MnistBinaryDataset, laplace_kernel, IteratedWiggleSearchScale
 if __name__ == '__main__':
     Ntr = 2000
     Nte = 2000
-    Xtr,Ytr, Xte,Yte = MnistBinaryDataset(3281).sample(4, 9, [Ntr, Ntr])
+    Xtr,Ytr, Xte,Yte = MnistBinaryDataset(3281).sample(4, 9, [Ntr, Nte])
     gamma0 = 1/784
     n_iter = 10
     search_n = 20

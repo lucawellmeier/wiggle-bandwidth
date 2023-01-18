@@ -6,7 +6,7 @@ from shared import MnistBinaryDataset, laplace_kernel, WiggledScaleKernelLS, Wig
 if __name__ == '__main__':
     Ntr = 1000
     Nte = 1000
-    Xtr,Ytr, Xte,Yte = MnistBinaryDataset(48888).sample(4, 9, [Ntr, Ntr])
+    Xtr,Ytr, Xte,Yte = MnistBinaryDataset(48888).sample(4, 9, [Ntr, Nte])
     splits = np.linspace(0.3, 0.95, num=20)
     gamma0 = 1/784
     search_gammas = get_search_gammas(gamma0, 2, 15)

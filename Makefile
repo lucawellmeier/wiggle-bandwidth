@@ -9,7 +9,7 @@ $(BUILD_DIR):
 COMPUTE_SCRIPTS = $(shell find experiments -name "*_compute.py")
 RESULTS = $(patsubst experiments/%_compute.py,$(BUILD_DIR)/results/%.npz,$(COMPUTE_SCRIPTS))
 .PRECIOUS: $(RESULTS)
-$(BUILD_DIR)/results/%.npz: experiments/%_compute.py experiments/shared.py | $(BUILD_DIR)
+$(BUILD_DIR)/results/%.npz: experiments/%_compute.py | $(BUILD_DIR)
 	python $<
 
 PRESENT_SCRIPTS = $(shell find experiments -name "*_present.py")

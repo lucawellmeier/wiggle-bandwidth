@@ -6,16 +6,16 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)/results
 	mkdir -p $(BUILD_DIR)/figures
 
-COMPUTE_SCRIPTS = $(shell find experiments -name "*_compute.py")
-RESULTS = $(patsubst experiments/%_compute.py,$(BUILD_DIR)/results/%.npz,$(COMPUTE_SCRIPTS))
+COMPUTE_SCRIPTS = $(shell find experiments -name "*.compute.py")
+RESULTS = $(patsubst experiments/%.compute.py,$(BUILD_DIR)/results/%.npz,$(COMPUTE_SCRIPTS))
 .PRECIOUS: $(RESULTS)
 $(BUILD_DIR)/results/%.npz: experiments/%_compute.py | $(BUILD_DIR)
-	python $<
+	.venv/bin/python $<
 
-PRESENT_SCRIPTS = $(shell find experiments -name "*_present.py")
-FIGURES = $(patsubst experiments/%_present.py,$(BUILD_DIR)/figures/%.png,$(PRESENT_SCRIPTS))
+PRESENT_SCRIPTS = $(shell find experiments -name "*.present.py")
+FIGURES = $(patsubst experiments/%.present.py,$(BUILD_DIR)/figures/%.png,$(PRESENT_SCRIPTS))
 $(BUILD_DIR)/figures/%.png: experiments/%_present.py $(BUILD_DIR)/results/%.npz
-	python $<
+	.venv/bin/python $<
 
 LATEX_CMD=pdflatex -output-directory=$(BUILD_DIR)/latextmp
 build/pdf/wiggle.pdf: paper.tex $(FIGURES) | $(BUILD_DIR)

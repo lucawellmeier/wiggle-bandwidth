@@ -256,11 +256,6 @@ evidence for:
         estimators (or if at all)?
     \item Does an iterated wiggle search find the best bandwidth?
         Is it less expensive than classical model selection techniques?
-    %\item Given that we move away from the interpolating state 
-    %    (in a smooth and controlled manner) does wiggling compare to 
-    %    Tikhonov?
-    %    What happens with the norm/complexity of a wiggled estimator
-    %    compared to the standard one?
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -348,7 +343,8 @@ We summarize the observations:
 \begin{figure}[htp]
     \centering
     \includegraphics[width=0.8\textwidth]{iterative_algo}
-    \caption{iterative algo}
+    \caption{Iteratively applying wiggle search and then refitting
+        a standard estimator with the found optimal bandwidth.}
     \label{fig:iterative_algo}
 \end{figure}
 
@@ -381,43 +377,75 @@ Summary:
         even though they are not fit on the full training set.
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\subsection{Experiment: Does it compare to Tikhonov?}
-%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions and next steps}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Finally, I propose a list of todos and questions for further research on 
+This paper proposes two new methods for leveraging the bandwidth in 
+Laplacian kernel ridgeless regression.
+The results seem to indicate that there is potential for them to replace
+classical methods for optimizing the parameter (grid search, 
+cross-validation) as they are expensive and don't scale well to big data.
+The methods have been demonstrated to improve over standard estimators 
+in some cases even with nearly optimal bandwidth guess.
+However, much further experimentation is necessary and providing 
+theoretical guarantees is thinkable as the recent progresses in the field 
+have opened new doors.
+
+Finally, I add a list of todos and questions for further research on 
 the method.
 \begin{itemize}
-    \item How far is the reach of wiggling being indicative about the refit
-        performance? That is, if I fix an initial bandwidth $\gamma_0$, 
-        what is the range of $\gamma$ such that the performance of the 
-        estimator $f_{\gamma_0, \gamma}$ can predict that of the estimator
-        $f_\gamma$? In small logarithmic local ranges our experiments have
-        shown strong similaritity of the risk curves but how far can this be 
-        streched? Here, theoretical guarantees are needed to make the method
-        pratically usable.
-    \item The MNIST dataset have been shown in \cite{justinterpolate} to 
-        be predicted best by ridgeless kernel estimators.
-        How do the curves from the Tikhonov experiments look like on 
-        datasets in which Tikhonov regularization is needed for better
-        generalization?
-    \item The part I am most interested in would be to prove high-probability
-        bounds for the wiggled estimators and potentially convergence rates
-        for the iterative algorithm (as it seems to be quite fast).
-        Luckily, I am working in a research group (MaLGa in Genova) that 
-        have very good understanding of kernel matrices of Matérn kernels
-        and have already proven many bounds for kernel ridge(less) 
-        regression in the past.
-    \item Most importantly: check the literature for any papers on these
+    \item Bigger scale experiments are necessary to prove that the method
+        really scales well (my computer couldn't do it)
+        Also because the MNIST dataset have been shown in \cite{justinterpolate} 
+        to be predicted best by ridgeless Laplacian estimators.
+        What happens with more noisy datasets?
+    \item Given that we move away from the interpolating state 
+        (in a smooth and controlled manner) does wiggling compare to 
+        Tikhonov?
+        What happens with the norm/complexity of a wiggled estimator
+        compared to the standard one?
+    \item As a mathematician I really want to leave the experimental world
+        and analyze on paper providing risk bounds.
+        There is in particular one phenomenon that I found by mistake and 
+        that I couldn't label.
+        If it is a general rule, that would imply that a wiggled estimator
+        "knows" about the the standard estimator and can be used to find its 
+        global risk minimum (always w.r.t. the bandwidth).
+        See \cref{app:strange}.
+    \item Check the literature for any papers on these
         methods. I haven't found anything so far but my research was not 
-        extensive.
+        at all exhaustive.
 \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+\section{A strange effect} \label{app:strange}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{strange}
+    \caption{Strange: Cheap wiggled estimators seems to know the expensive 
+        standard ones perfectly well?}
+    \label{fig:strange}
+\end{figure}
+
+In one of my other experiments I used the inverse bandwidth convention.
+It is more or less the same plot as in \cref{fig:range} just with 
+$\gamma \to 1/\gamma$ so that I had to manually edit the bandwidth 
+values to obtain readable results in the new scale.
+However, in that inverse, it appeared to me that the wiggled estimator
+"knew" perfectly well where the true optimal bandwidth of the standard 
+estimator is.
+Indeed, \cref{fig:strange} shows extrema at exactlt that best point 
+even if the base bandwidth is far away.
+I coudln't confirm that this is a big coincidence but I would like to 
+investigate that more.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

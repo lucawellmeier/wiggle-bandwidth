@@ -9,7 +9,7 @@ if __name__ == '__main__':
     iters = list(range(n_iter))
 
     fig,axs = plt.subplots(1, 2)
-    fig.set_size_inches(9,4.5)
+    fig.set_size_inches(9,4)
     fig.suptitle('Average fit time: {:.2f} seconds'.format(np.mean(np.array(results['fit_times']))))
     axs[0].set_title('MSE history')
     axs[0].plot(iters, results['refit'], label='refit with best bandwidth')
@@ -19,7 +19,8 @@ if __name__ == '__main__':
     axs[0].legend()
     axs[1].set_title('bandwidth history')
     axs[1].plot(iters, results['gamma_hist'])
-    axs[0].set_xlabel('iteration')
-    axs[0].set_ylabel('$\gamma$')
+    axs[1].set_xlabel('iteration')
+    axs[1].set_ylabel('$\gamma$')
 
+    fig.tight_layout()
     fig.savefig(figFile)

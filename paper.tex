@@ -155,10 +155,11 @@ on GitHub\footnote{\url{https://github.com/lucawellmeier/wiggle-bandwidth}}.
 
 % notation and basics
 As announced, let us fix the Laplacian kernel function
-\[ k_\gamma(x,x') = \exp\left(-\frac{\| x - x' \|}{\gamma} \right) \]
+\[ k_\gamma(x,x') = \exp\left(-\gamma \| x - x' \| \right) \]
 with bandwidth $\gamma > 0$.
-The convention here is that smaller bandwidth actually decreases the 
+The convention here is that smaller bandwidth actually increases the 
 area under the curve $x \mapsto k_0(x) \coloneqq k(0,x)$ and vice-versa.
+(different conventions everywhere!).
 This whole note is based on the observation that the kernel ridgeless 
 estimators use the bandwidth twice in distinct places:
 once in the computation of the \emph{dual coefficients}
@@ -227,7 +228,7 @@ $\Tr_2$.
 Once it is computed, we can test a new wiggled estimator 
 for \emph{any} other bandwidth $\gamma$ by running
 the vectorized computation
-\[ \big( \mathbf c^{\gamma_0} \exp(-(1/\gamma) \mathbf D) \big)^T \]
+\[ \big( \mathbf c^{\gamma_0} \exp(-\gamma \mathbf D) \big)^T \]
 yielding the new predictions of the inputs in $\Tr_2$.
 Thus, the big hard part of the computation, i.e. finding $\mathbf D$,
 needs to be done only once for size of $\Gamma$.
@@ -253,13 +254,13 @@ evidence for:
         context of wiggle search?
         When does wiggle search provide an advantage over standard 
         estimators (or if at all)?
-    \item Given that we move away from the interpolating state 
-        (in a smooth and controlled manner) does wiggling compare to 
-        Tikhonov?
-        What happens with the norm/complexitie of a wiggled estimator
-        compared to the standard one?
     \item Does an iterated wiggle search find the best bandwidth?
         Is it less expensive than classical model selection techniques?
+    %\item Given that we move away from the interpolating state 
+    %    (in a smooth and controlled manner) does wiggling compare to 
+    %    Tikhonov?
+    %    What happens with the norm/complexity of a wiggled estimator
+    %    compared to the standard one?
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -305,30 +306,84 @@ We summarize the observations:
 
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=\textwidth]{split}
-    \caption{split}
+    \includegraphics[width=0.8\textwidth]{split}
+    \caption{
+        Figuring out the sweet spot for the train split on real data.
+        "Baseline" always refers to the standard estimator with the 
+        base bandwidth on the full train set.
+        The test MSE curves refer to the best wiggled bandwidth. }
     \label{fig:split}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Experiment: Does it compare to Tikhonov?}
+The last experiment gave hope that wiggle search can work well.
+In this part we will try to figure out the sweet spot between computational
+savings and performance gain.
+We move to real data now.
 
-\begin{figure}[htp]
-    \centering
-    \includegraphics[width=\textwidth]{tikhonov}
-    \caption{tikhonov}
-    \label{fig:tikhonov}
-\end{figure}
+We choose the MNIST binary classification task with digits 4 and 9
+(the hardest to distinguish) with fixed sample of size $N_{\Tr} = 1000$.
+The set $\Gamma = \Gamma(\gamma_0)$ is being chosen at each base bandwidth
+as a small logarithmic scale clustered at the center $\gamma_0$ 
+(contains 30 bandwidths) and we fix $\gamma_0 = 1/784$ which is the 
+\texttt{sklearn} default choice (based purely on dimensionality).
+The splits are percentages $p$ of $N_{\Tr}$.
+All plotted values are with respect to $p \in [0.3, 0.95]$:
+sample error, error on held-out set, error on test set, as well as the 
+chosen bandwidths and the fitting times.
+See \cref{fig:split} for the results.
+
+We summarize the observations:
+\begin{itemize}
+    \item The more data we are considering, the bigger we choose the 
+        bandwidth parameter (e.g. the smaller the area under the kernel
+        function will be) as one would expect.
+    \item We achieve equivalent performance just by using only 70\% of the
+        training set plus wiggling.
+        After that point we see only improvements in favor of wiggling.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Experiment: Iterative wiggling as cheap bandwidth optimization}
 
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=\textwidth]{iterative_algo}
+    \includegraphics[width=0.8\textwidth]{iterative_algo}
     \caption{iterative algo}
     \label{fig:iterative_algo}
 \end{figure}
+
+We have already seen in the first experiment that the direction given by
+wiggle search seems to be the right one.
+In this experiment we are going to test the iterated wiggle search as 
+described above: fit least squares, wiggle search, refit with the best bandwidth, 
+and so on.
+If the chosen bandwidth converges to something, we are likely to have hit an 
+optimum or at least something close to one.
+
+The experimental setup is the same as above.
+MNIST binary, initial bandwidth $\gamma_0 = 1/784$ and by our previous 
+findings, train split $p = 0.85$.
+We plot both the wiggled estimator's MSE with best bandwidth and that 
+of refit standard estimator with exactly that MSE.
+We also plot the history of the best bandwidth found.
+The algorithm was run for more than 9 iterations but it converged 
+and we cut the plot.
+See the results in \cref{fig:iterative_algo}.
+
+Summary:
+\begin{itemize}
+    \item The algorithm converges and decreases the MSE as hoped for.
+    \item Remarkably, the curves for wiggled and refit estimators are
+        qualitatively the same! 
+        This gives hope for finding good theoretical guarantees for this
+        method.
+    \item The wiggled estimators reliably outperform the standard ones
+        even though they are not fit on the full training set.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Experiment: Does it compare to Tikhonov?}
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

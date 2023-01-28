@@ -6,23 +6,30 @@
 \usepackage[nopatch=eqnum]{microtype}
 \usepackage{graphicx}
 \usepackage{cleveref}
+\usepackage{mathtools}
+
+\setlength{\textwidth}{\paperwidth}
+\addtolength{\textwidth}{-2in}
+\calclayout
 
 \graphicspath{{build/figures/}}
 
 \newcommand{\R}{\mathbb{R}}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\argmin}{argmin}
 
-\title{Wiggling the bandwidth in ridgeless regression 
-        with scale-dependent kernels}
+\title{Wiggling the bandwidth}
 \author{Luca Wellmeier}
 \begin{document}
 \begin{abstract}
     We explore the possibility of using two different bandwidths in the 
     fitting and evaluation part in kernel ridgeless regression.
     The provided experimental results indicate that \textit{wiggling}
-    the bandwidth in this way can generalize and be a cheap alternative to
-    the classical Tikhonov square-norm penality.
+    the bandwidth in this way can provide generalization and potentially 
+    be a cheap alternative to the classical Tikhonov square-norm penality.
     Finally, we propose and test a new iterative method for optimizing the 
-    bandwidth parameter by employing wiggling in a local search.
+    bandwidth parameter by employing wiggling in a cheap local parameter 
+    search.
 \end{abstract}
 \maketitle
 \tableofcontents
@@ -113,7 +120,7 @@ Now, these circumstances have not been fully understood but some necessary
 conditions seem to have pinned down:
 high-dimensionality (\cite{laplaceconsistency,benignoverfitting}) 
 with low effective dimension (\cite{benignoverfitting})
-and properly chosen smoothness of the kernel w.r.t. the nature of the data 
+and properly chosen curvature of the kernel w.r.t. the nature of the data 
 (\cite{justinterpolate}).
 Moreover, there seems to be strong links (\cite{ntklaplacian}) between 
 Laplacian kernels and ReLU feed-forward neural nets through another kernel 
@@ -123,16 +130,21 @@ learning dynamics of gradient descent there.
 % choice of kernel and what we will do
 These considerations have also sparked new interest in the other direction:
 due to all the analogies between kernels and neural nets researchers have
-started to scale up kernel methods to deal with big data.
+started to scale up kernel methods to deal with big data 
+(see for instance \cite{falkon}).
 Interesting targets have been kernels coming from the Sobolev-Hilbert spaces
 $H^s(\R^d)$ with real smoothness index: the \emph{Matérn kernels}.
-This family's smoothest member is the Gaussian kernel, but we will (due to 
-the motivations above) consider only its least smooth member: the Laplacian
-kernel
-\[ k_\gamma(x,x') = \exp(-\gamma \| x - x' \|). \]
-The only hyper-parameter to adjust is the bandwidth $\gamma$ and in this 
-paper we investigate a new principle on how to both optimize it in 
-large-scale contexts and use it for regularization purposes.
+This family's smoothness limit member is the Gaussian kernel, but we will 
+(due to the motivations above) 
+consider only the well known the Laplacian kernel
+\[ k_\gamma(x,x') = \exp(-\gamma \| x - x' \|) \]
+which belongs to the less smooth part of the spectrum.
+The only hyperparameter to adjust is the bandwidth $\gamma$ and in this 
+paper we investigate experimentally a new principle on how to both optimize 
+it in large-scale contexts and use it for regularization purposes.
+
+The full code of the experiments can be found 
+on GitHub\footnote{\url{https://github.com/lucawellmeier/wiggle-bandwidth}}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -140,18 +152,127 @@ large-scale contexts and use it for regularization purposes.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% notation and basics
+As announced, let us fix the Laplacian kernel function
+\[ k_\gamma(x,x') = \exp\left(-\frac{\| x - x' \|}{\gamma} \right) \]
+with bandwidth $\gamma > 0$.
+The convention here is that smaller bandwidth actually decreases the 
+area under the curve $x \mapsto k_0(x) \coloneqq k(0,x)$ and vice-versa.
+This whole note is based on the observation that the kernel ridgeless 
+estimators use the bandwidth twice in distinct places:
+once in the computation of the \emph{dual coefficients}
+\[ c_i = (\mathbf K_\gamma^\dagger Y)_i \]
+where the kernel matrix depends on it and then
+in the evaluation part
+\[ \sum_i c_i k_\gamma(x,x_i) \]
+where the kernel is computed to check similarities between sample 
+points $x_i$ and unseen points $x$.
+Note that the dependence of the dual coefficients on the bandwidth is 
+not even guaranteed to be continuous and generally hard to understand
+due to the appearing pseudo-inverse.
+However, the evaluation part offers a different perspective, if we 
+fix the dual coefficients $c_i$ and an unseen point $x$, then
+the relationship
+\[ \gamma \mapsto \sum_{i=1}^n c_i k_\gamma(x,x_i) \]
+is smooth: indeed, $\gamma$ appears only as a factor to the non-smooth
+norm in the exponential.
+
 % what i mean by wiggling
+Thus, we propose the new \emph{bandwidth-wiggled} estimators
+\[ \hat f_{\gamma_0, \gamma}(x) \coloneqq 
+    \sum_{i=1}^n (K_{\gamma_0} Y)^\dagger k_\gamma(x, x_i). \]
+The pseudo-inverse is computed for a given base bandwidth $\gamma_0$
+but the evaluation part is performed with a different bandwidth $\gamma$.
+Due to the regularity argument above, we hypothesize that 
+changing $\gamma_0 \to \gamma$ in the evaluation part is well-behaved.
+The next chapters are devoted to experimentally verifying this, but 
+also to explore possible new methods based on this estimator.
 
-% not interpolating anymore
+% wiggle search
+The first method that we introduce here is referred to as 
+\emph{wiggle search}.
+Let $\Tr$ denote the training set with $n$ samples.
+Split it into two non-empty parts: $\Tr = \Tr_1 \sqcup \Tr_2$
+and train the a standard Laplacian ridgeless estimator only on
+$\Tr_1$ with an initial guessed bandwidth $\gamma_0$.
+Then extract the dual coefficients $c_i^{\gamma_0}$ from there 
+and use them to define the family predictors 
+\[ \hat f_{\gamma_0,\gamma} 
+    \coloneqq \sum_{i \in \Tr_1} c_i^{\gamma_0} k_\gamma(\cdot, x_i) \]
+for each $\gamma$ in a finite set $\Gamma \subset \R_{> 0}$.
+Then select $\gamma^*$ such that 
+\[ \gamma^* = \argmin_{\gamma \in \Gamma} 
+    \hat R_{\Tr_2} \left(\hat f_{\gamma_0,\gamma}\right), \]
+i.e. the associated wiggled estimator minimizes the empricial mean
+squared error on the held-out part of the sample.
+This algorithm is more efficient in comparison to computing the 
+standard estimators:
+The least squares computation to determine the dual coefficients is
+cubic in the sample size, so as a first improvement, we reduce this 
+time effectively by splitting the sample.
+Moreover, existing techniques for optimizing the bandwidth
+(i.e. grid search, cross-validation, ...) test one parameter value 
+per least squares computation.
+Here, instead, potentially thousands of parameters are tested with 
+on single least squares assuming that $\hat f_{\gamma_0,\gamma}$ 
+is representative of the actual standard estimator 
+$\hat f_{\gamma,\gamma}$.
 
-% computational complexity and algorithmics
+% computational trick
+Note that the comparison of the different bandwidths can be computed 
+in a highly vectorized way:
+Let $\mathbf D$ denote the distance matrix of 2-norms between $\Tr_1$ and 
+$\Tr_2$.
+Once it is computed, we can test a new wiggled estimator 
+for \emph{any} other bandwidth $\gamma$ by running
+the vectorized computation
+\[ \big( \mathbf c^{\gamma_0} \exp(-(1/\gamma) \mathbf D) \big)^T \]
+yielding the new predictions of the inputs in $\Tr_2$.
+Thus, the big hard part of the computation, i.e. finding $\mathbf D$,
+needs to be done only once for size of $\Gamma$.
+
+% iterative search
+If wiggle search performs well and compares to the standard estimator 
+with the optimal wiggled bandwidth (as we will see in the experiments), 
+we can start considering an \emph{itertated wiggle search}:
+run a wiggle search, find the optimal bandwidth, recompute the 
+least squares with that bandwidth on $\Tr_1$ and repeat.
+That will make up our final experiment in the paper.
 
 % questions
+Summing up, here is the questions we aim to provide experimental 
+evidence for:
+\begin{enumerate}
+    \item How close are wiggled estimators and standard estimators with 
+        the wiggle bandwidth? 
+        What is the radius of $\gamma$'s around $\gamma_0$ such that one 
+        can move knowledge from one to the other? 
+        How to choose the wiggle range $\Gamma$?
+    \item What would be a good point to split the training set in the 
+        context of wiggle search?
+        When does wiggle search provide an advantage over standard 
+        estimators (or if at all)?
+    \item Given that we move away from the interpolating state 
+        (in a smooth and controlled manner) does wiggling compare to 
+        Tikhonov?
+        What happens with the norm/complexitie of a wiggled estimator
+        compared to the standard one?
+    \item Does an iterated wiggle search find the best bandwidth?
+        Is it less expensive than classical model selection techniques?
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Experiment: How close are wiggled and standard estimators?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Experiment: Does it compare to Tikhonov?}
 
-
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{tikhonov}
+    \caption{tikhonov}
+    \label{fig:tikhonov}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Experiment: Where to split the training set?}
@@ -169,17 +290,43 @@ large-scale contexts and use it for regularization purposes.
 \begin{figure}[htp]
     \centering
     \includegraphics[width=\textwidth]{iterative_algo}
-    \caption{split}
+    \caption{iterative algo}
     \label{fig:iterative_algo}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusions and future directions}
+\section{Conclusions and next steps}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+Finally, I propose a list of todos and questions for further research on 
+the method.
+\begin{itemize}
+    \item How far is the reach of wiggling being indicative about the refit
+        performance? That is, if I fix an initial bandwidth $\gamma_0$, 
+        what is the range of $\gamma$ such that the performance of the 
+        estimator $f_{\gamma_0, \gamma}$ can predict that of the estimator
+        $f_\gamma$? In small logarithmic local ranges our experiments have
+        shown strong similaritity of the risk curves but how far can this be 
+        streched? Here, theoretical guarantees are needed to make the method
+        pratically usable.
+    \item The MNIST dataset have been shown in \cite{justinterpolate} to 
+        be predicted best by ridgeless kernel estimators.
+        How do the curves from the Tikhonov experiments look like on 
+        datasets in which Tikhonov regularization is needed for better
+        generalization?
+    \item The part I am most interested in would be to prove high-probability
+        bounds for the wiggled estimators and potentially convergence rates
+        for the iterative algorithm (as it seems to be quite fast).
+        Luckily, I am working in a research group (MaLGa in Genova) that 
+        have very good understanding of kernel matrices of Matérn kernels
+        and have already proven many bounds for kernel ridge(less) 
+        regression in the past.
+    \item Most importantly: check the literature for any papers on these
+        methods. I haven't found anything so far but my research was not 
+        extensive.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -204,6 +351,9 @@ Geifman, Amnon, et al. "On the similarity between the laplace and neural tangent
 
 \bibitem{laplaceconsistency}
 Rakhlin, Alexander, and Xiyu Zhai. "Consistency of interpolation with Laplace kernels is a high-dimensional phenomenon." Conference on Learning Theory. PMLR, 2019.
+
+\bibitem{falkon}
+Rudi, Alessandro, Luigi Carratino, and Lorenzo Rosasco. "Falkon: An optimal large scale kernel method." Advances in neural information processing systems 30 (2017).
 
 \end{thebibliography}
 \end{document}

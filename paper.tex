@@ -16,6 +16,7 @@
 
 \newcommand{\R}{\mathbb{R}}
 \DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\Te}{Te}
 \DeclareMathOperator{\argmin}{argmin}
 
 \title{Wiggling the bandwidth}
@@ -264,15 +265,40 @@ evidence for:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Experiment: How close are wiggled and standard estimators?}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Experiment: Does it compare to Tikhonov?}
-
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=\textwidth]{tikhonov}
-    \caption{tikhonov}
-    \label{fig:tikhonov}
+    \includegraphics[width=\textwidth]{range}
+    \caption{
+        Standard versus wiggled estimators. 
+        The green vertical line shows the base bandwidth.
+        The dots indicate the minima.
+        The blue line is indepdent of the base bandwidth. }
+    \label{fig:range}
 \end{figure}
+
+In this first experiment we want to find out the relationship between wiggled
+estimator $\hat f_{\gamma_0,\gamma}$ and standard estimator 
+$\hat f_{\gamma,\gamma}$.
+We choose a reasonably hard function $[3/2, 3] \to \R$, namely
+\[ f(x) = \zeta(x) \sin(20 x), \]
+and pick $N_{\Tr} = 30$ uniformly sampled training points.
+In a range of $\Gamma = [10,50]$ we plot the performance on 
+a training set (regular grid, $N_{\Te} = 1000$) of the "standard" estimator
+for each $\gamma$ and the "wiggled" estimator wiggled for the same 
+$\gamma$ but previously fit on a fixed base bandwidth $\gamma_0$.
+We plot this 6 times for different base bandwidth.
+See \cref{fig:range} for the results.
+
+We summarize the observations:
+\begin{itemize}
+    \item Generally, the behavior of wiggling $\gamma$ away from $\gamma_0$
+        is smooth as expected.
+    \item The first four plots show that wiggling improves over standard
+        estimators even if the base bandwidth is already optimal.
+    \item If the base bandwidth is chosen too small, then a iterated 
+        wiggle search goes in the direction of the standard optimal bandwidth.
+    \item However, plot no. 5 shows that this seems not be the case in general.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Experiment: Where to split the training set?}
@@ -282,6 +308,16 @@ evidence for:
     \includegraphics[width=\textwidth]{split}
     \caption{split}
     \label{fig:split}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Experiment: Does it compare to Tikhonov?}
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=\textwidth]{tikhonov}
+    \caption{tikhonov}
+    \label{fig:tikhonov}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

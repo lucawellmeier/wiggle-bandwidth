@@ -9,12 +9,12 @@ $(BUILD_DIR):
 COMPUTE_SCRIPTS = $(shell find experiments -name "*.compute.py")
 RESULTS = $(patsubst experiments/%.compute.py,$(BUILD_DIR)/results/%.npz,$(COMPUTE_SCRIPTS))
 .PRECIOUS: $(RESULTS)
-$(BUILD_DIR)/results/%.npz: experiments/%_compute.py | $(BUILD_DIR)
+$(BUILD_DIR)/results/%.npz: experiments/%.compute.py | $(BUILD_DIR)
 	.venv/bin/python $<
 
 PRESENT_SCRIPTS = $(shell find experiments -name "*.present.py")
 FIGURES = $(patsubst experiments/%.present.py,$(BUILD_DIR)/figures/%.png,$(PRESENT_SCRIPTS))
-$(BUILD_DIR)/figures/%.png: experiments/%_present.py $(BUILD_DIR)/results/%.npz
+$(BUILD_DIR)/figures/%.png: experiments/%.present.py $(BUILD_DIR)/results/%.npz
 	.venv/bin/python $<
 
 LATEX_CMD=pdflatex -output-directory=$(BUILD_DIR)/latextmp

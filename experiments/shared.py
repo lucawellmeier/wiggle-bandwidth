@@ -13,7 +13,7 @@ import numpy as np
 def get_result_and_figure_path():
     script = sys.argv[0]
     basename = os.path.splitext(os.path.basename(script))[0]\
-        .replace('_compute', '').replace('_present', '')
+        .replace('.compute', '').replace('.present', '')
     return ( 'build/results/' + basename + '.npz', 
         'build/figures/' + basename + '.png' )
 
